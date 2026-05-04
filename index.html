@@ -1,186 +1,241 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Verb Match Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectors Challenge</title>
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --accent-color: #ff9a9e;
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            --card-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            --accent: #00d2ff;
         }
 
-        body {
+        body, html {
             margin: 0;
             padding: 0;
+            height: 100%;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background: var(--bg-gradient);
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background: var(--primary-gradient);
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px 20px;
-            box-sizing: border-box;
-        }
-
-        #game-area {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 500px;
-            flex-grow: 1;
-        }
-
-        .column {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Распределяет карточки по всей высоте */
-            width: 46%;
-            height: 82vh; 
-        }
-
-        .item {
-            background: var(--card-bg);
-            color: #333;
-            padding: 10px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            min-height: 45px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            user-select: none;
-        }
-
-        .item.selected {
-            background: var(--accent-color);
+            align-items: center;
             color: white;
-            transform: scale(1.05);
+            overflow: hidden;
         }
 
-        .item.matched {
-            opacity: 0.3;
-            background: #d1d1d1;
-            color: #888;
-            pointer-events: none;
-            box-shadow: none;
+        .game-wrapper {
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
         }
 
-        .controls {
-            padding: 15px 0 25px;
+        /* Контейнер карточки */
+        .card-scene {
+            perspective: 1200px;
+            margin-bottom: 40px;
         }
 
-        .btn {
-            background: white;
-            color: #764ba2;
-            border: none;
-            padding: 12px 45px;
-            border-radius: 50px;
-            font-weight: bold;
+        .card {
+            width: 100%;
+            height: 320px;
+            position: relative;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            font-size: 16px;
         }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Стороны карточки */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Рубашка */
+        .card-front {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .card-front .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px var(--accent));
+        }
+
+        .card-front span {
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Лицевая сторона */
+        .card-back {
+            background: white;
+            color: #1a1a1a;
+            transform: rotateY(180deg);
+        }
+
+        .sentence {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .sentence b {
+            color: #ff4b2b; /* Выделение союзов цветом */
+            text-decoration: underline;
+        }
+
+        /* Кнопка */
+        .main-btn {
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            border: none;
+            padding: 18px 45px;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,210,255,0.3);
+        }
+
+        .main-btn:active {
+            transform: scale(0.95);
+        }
+
+        .progress {
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        /* Эффект при смене */
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-animation { animation: pop 0.4s ease-out; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="game-area">
-        <div class="column" id="verbs-col"></div>
-        <div class="column" id="phrases-col"></div>
+<div class="game-wrapper">
+    <div class="card-scene">
+        <div class="card" id="card" onclick="flipCard()">
+            <div class="card-face card-front">
+                <div class="icon">✨</div>
+                <span>Tap to reveal</span>
+            </div>
+            <div class="card-face card-back">
+                <div class="sentence" id="display">Are you ready?</div>
+            </div>
+        </div>
     </div>
-    
-    <div class="controls">
-        <button class="btn" onclick="location.reload()">RESET GAME</button>
-    </div>
+
+    <button class="main-btn" onclick="nextCard()">NEXT CARD</button>
+    <div class="progress" id="progress">Cards left: ...</div>
 </div>
 
 <script>
-    // Правильные пары для логики
-    const pairs = [
-        { v: "invite", p: "somebody to dinner" },
-        { v: "meet", p: "in a coffee bar" },
-        { v: "take", p: "somebody to a restaurant" },
-        { v: "knock", p: "on the door" },
-        { v: "play", p: "a song" },
-        { v: "run", p: "across the road" },
-        { v: "be", p: "in a hurry" },
-        { v: "wait", p: "for somebody" },
-        { v: "try", p: "to stop" }
+    // Предложения из вашего списка с выделением союзов тегом <b>
+    const rawSentences = [
+        "I was really tired <b>so</b> ...",
+        "I didn't phone you <b>because</b> ...",
+        "It was quite a good film <b>but</b> ...",
+        "<b>Although</b> my job isn't very well paid ...",
+        "My father is French and my mother is Spanish <b>so</b> ...",
+        "He was driving fast <b>because</b> ...",
+        "I wanted to buy some bread <b>but</b> ...",
+        "<b>Although</b> my boss is very friendly ...",
+        "She wasn't feeling well <b>so</b> ...",
+        "I couldn't come to class last week <b>because</b> ...",
+        "She likes him a lot <b>but</b> ...",
+        "We really like that restaurant <b>although</b> ...",
+        "I wanted to improve my English <b>so</b> ...",
+        "I woke up in the middle of the night <b>because</b> ...",
+        "We took our umbrella <b>but</b> ...",
+        "<b>Although</b> we played very well ...",
+        "The weather was very cold <b>so</b> ...",
+        "We couldn't understand the man <b>because</b> ...",
+        "They're poor <b>but</b> ...",
+        "<b>Although</b> it was a five-star hotel ..."
     ];
 
-    // Глаголы по порядку
-    const verbs = ["invite", "meet", "take", "knock", "play", "run", "be", "wait", "try"];
-    
-    // Фразы перемешаны так, чтобы пары стояли максимально далеко друг от друга
-    const phrases = [
-        "for somebody",           // пара для wait (8-я строка)
-        "to stop",                // пара для try (9-я строка)
-        "in a hurry",             // пара для be (7-я строка)
-        "across the road",        // пара для run (6-я строка)
-        "somebody to dinner",     // пара для invite (1-я строка) — МАКСИМАЛЬНО ДАЛЕКО
-        "a song",                 // пара для play (5-я строка)
-        "on the door",            // пара для knock (4-я строка)
-        "somebody to a restaurant", // пара для take (3-я строка)
-        "in a coffee bar"         // пара для meet (2-я строка)
-    ];
+    let deck = [];
+    const card = document.getElementById('card');
+    const display = document.getElementById('display');
+    const progress = document.getElementById('progress');
 
-    let selected = null;
-
-    function init() {
-        const vCol = document.getElementById('verbs-col');
-        const pCol = document.getElementById('phrases-col');
-
-        verbs.forEach(v => {
-            const el = document.createElement('div');
-            el.className = 'item verb';
-            el.textContent = v;
-            el.onclick = () => {
-                document.querySelectorAll('.verb').forEach(i => i.classList.remove('selected'));
-                el.classList.add('selected');
-                selected = { el, val: v };
-            };
-            vCol.appendChild(el);
-        });
-
-        phrases.forEach(p => {
-            const el = document.createElement('div');
-            el.className = 'item phrase';
-            el.textContent = p;
-            el.onclick = () => {
-                if (!selected) return;
-                
-                if (pairs.find(pair => pair.v === selected.val && pair.p === p)) {
-                    el.classList.add('matched');
-                    selected.el.classList.add('matched');
-                } else {
-                    el.style.background = '#ffbaba';
-                    setTimeout(() => el.style.background = '', 400);
-                }
-                
-                selected.el.classList.remove('selected');
-                selected = null;
-            };
-            pCol.appendChild(el);
-        });
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
     }
 
-    init();
+    function initGame() {
+        deck = shuffle([...rawSentences]);
+        updateProgress();
+        showFront();
+    }
+
+    function flipCard() {
+        card.classList.toggle('is-flipped');
+    }
+
+    function showFront() {
+        card.classList.remove('is-flipped');
+    }
+
+    function updateProgress() {
+        progress.innerText = `Cards remaining: ${deck.length}`;
+    }
+
+    function nextCard() {
+        if (deck.length === 0) {
+            alert("Perfect! You've finished all cards.");
+            initGame();
+            return;
+        }
+
+        // Если карта была открыта, закрываем её перед сменой текста
+        if (card.classList.contains('is-flipped')) {
+            card.classList.remove('is-flipped');
+            setTimeout(draw, 300);
+        } else {
+            draw();
+        }
+    }
+
+    function draw() {
+        const text = deck.pop();
+        display.innerHTML = text; // Используем innerHTML для поддержки тегов <b>
+        updateProgress();
+        
+        // Анимация появления
+        const scene = document.querySelector('.card-scene');
+        scene.classList.remove('pop-animation');
+        void scene.offsetWidth; 
+        scene.classList.add('pop-animation');
+    }
+
+    initGame();
 </script>
 
 </body>
